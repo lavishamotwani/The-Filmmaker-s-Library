@@ -1,0 +1,228 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: The Filmmaker's Library API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: courses
+    description: Course operations
+  - name: modules
+    description: Module operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /courses:
+    get:
+      operationId: getCourses
+      tags: [courses]
+      summary: List all courses
+      responses:
+        "200":
+          description: List of courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CourseSummary"
+
+  /courses/{slug}:
+    get:
+      operationId: getCourse
+      tags: [courses]
+      summary: Get a course with all phases and modules
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Course with phases and modules
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourseDetail"
+        "404":
+          description: Not found
+
+  /modules/{id}:
+    get:
+      operationId: getModule
+      tags: [modules]
+      summary: Get a module with all resources and exercises
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Module detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModuleDetail"
+        "404":
+          description: Not found
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+
+    CourseSummary:
+      type: object
+      required: [id, slug, title, description, totalModules, color, icon]
+      properties:
+        id:
+          type: integer
+        slug:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        totalModules:
+          type: integer
+        color:
+          type: string
+        icon:
+          type: string
+
+    CourseDetail:
+      type: object
+      required: [id, slug, title, description, color, icon, phases]
+      properties:
+        id:
+          type: integer
+        slug:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        color:
+          type: string
+        icon:
+          type: string
+        phases:
+          type: array
+          items:
+            $ref: "#/components/schemas/Phase"
+
+    Phase:
+      type: object
+      required: [id, title, description, order, modules]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        order:
+          type: integer
+        modules:
+          type: array
+          items:
+            $ref: "#/components/schemas/ModuleSummary"
+
+    ModuleSummary:
+      type: object
+      required: [id, title, description, order, phaseId]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        order:
+          type: integer
+        phaseId:
+          type: integer
+
+    ModuleDetail:
+      type: object
+      required: [id, title, description, order, phaseId, courseId, courseSlug, courseTitle, phaseName, resources, exercises]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        order:
+          type: integer
+        phaseId:
+          type: integer
+        courseId:
+          type: integer
+        courseSlug:
+          type: string
+        courseTitle:
+          type: string
+        phaseName:
+          type: string
+        resources:
+          type: array
+          items:
+            $ref: "#/components/schemas/Resource"
+        exercises:
+          type: array
+          items:
+            $ref: "#/components/schemas/Exercise"
+
+    Resource:
+      type: object
+      required: [id, type, title, isFree]
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [book, video, film, podcast, website, essay]
+        title:
+          type: string
+        author:
+          type: ["string", "null"]
+        url:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        isFree:
+          type: boolean
+
+    Exercise:
+      type: object
+      required: [id, title, description]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
